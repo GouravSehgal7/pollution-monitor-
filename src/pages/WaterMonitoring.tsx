@@ -29,6 +29,15 @@ import {
 } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
 import WaterQualityMonitor from "@/components/WaterQualityMonitor";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const WaterMonitoring = () => {
   useEffect(() => {
@@ -223,7 +232,7 @@ const WaterMonitoring = () => {
                 <CardContent>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={historyData}>
+                      <RechartsBarChart data={historyData}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                         <XAxis dataKey="date" />
                         <YAxis />
@@ -234,7 +243,7 @@ const WaterMonitoring = () => {
                           name="Water Quality Index" 
                           fill="#8884d8" 
                         />
-                      </BarChart>
+                      </RechartsBarChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
