@@ -14,7 +14,12 @@ import {
   UserProfile, 
   getPersonalizedRecommendations 
 } from "../utils/ml-prediction";
-import { getAQICategory, evaluateWaterQuality } from "../utils/aqi-calculator";
+import { 
+  getAQICategory, 
+  evaluateWaterQuality, 
+  getHealthBasedRecommendations,
+  HealthCondition 
+} from "../utils/aqi-calculator";
 
 interface AQIContextType {
   currentAQI: AQIData | null;
@@ -29,6 +34,7 @@ interface AQIContextType {
   personalizedRecommendations: {
     recommendedHours: number[];
     personalAdvice: string[];
+    healthRecommendations: string[];
   } | null;
   refreshData: () => Promise<void>;
 }
@@ -36,7 +42,8 @@ interface AQIContextType {
 const defaultUserProfile: UserProfile = {
   hasSensitivities: false,
   activityLevel: 'moderate',
-  typicalOutdoorHours: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+  typicalOutdoorHours: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+  healthCondition: 'none'
 };
 
 const AQIContext = createContext<AQIContextType | undefined>(undefined);
@@ -56,6 +63,7 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [personalizedRecommendations, setPersonalizedRecommendations] = useState<{
     recommendedHours: number[];
     personalAdvice: string[];
+    healthRecommendations: string[];
   } | null>(null);
 
   // Check for threshold crossing
@@ -144,7 +152,16 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         userProfile
       );
       
-      setPersonalizedRecommendations(recommendations);
+      // Get health-specific recommendations
+      const healthRecommendations = getHealthBasedRecommendations(
+        aqiData.aqi,
+        userProfile.healthCondition || 'none'
+      );
+      
+      setPersonalizedRecommendations({
+        ...recommendations,
+        healthRecommendations
+      });
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -193,7 +210,15 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         userProfile
       );
       
-      setPersonalizedRecommendations(recommendations);
+      const healthRecommendations = getHealthBasedRecommendations(
+        currentAQI.aqi,
+        userProfile.healthCondition || 'none'
+      );
+      
+      setPersonalizedRecommendations({
+        ...recommendations,
+        healthRecommendations
+      });
     }
   }, [userProfile, currentAQI, hourlyForecast]);
 

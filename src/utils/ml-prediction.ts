@@ -1,5 +1,6 @@
 // This file contains mocks for ML prediction functionality
 // In a real implementation, this would use TensorFlow.js or a similar ML library
+import { HealthCondition } from "./aqi-calculator";
 
 // Simulated hourly AQI values for today
 export const generateHourlyAQIForecast = (currentAQI: number): { hour: number, aqi: number }[] => {
@@ -85,6 +86,7 @@ export interface UserProfile {
   hasSensitivities: boolean;
   activityLevel: 'low' | 'moderate' | 'high';
   typicalOutdoorHours: number[];
+  healthCondition?: HealthCondition;
 }
 
 export const getPersonalizedRecommendations = (
@@ -115,6 +117,26 @@ export const getPersonalizedRecommendations = (
     }
   }
   
+  // Set even lower thresholds for certain health conditions
+  if (userProfile.healthCondition) {
+    switch(userProfile.healthCondition) {
+      case 'asthma':
+      case 'copd':
+      case 'bronchitis':
+        aqiThreshold = Math.min(aqiThreshold, 40); // Stricter threshold for respiratory conditions
+        break;
+      case 'heart-disease':
+        aqiThreshold = Math.min(aqiThreshold, 50); // Stricter for heart conditions
+        break;
+      case 'allergy':
+        aqiThreshold = Math.min(aqiThreshold, 60); // Somewhat stricter for allergies
+        break;
+      default:
+        // Keep existing threshold
+        break;
+    }
+  }
+  
   // Filter forecast hours by user's typical outdoor hours and AQI threshold
   const filteredHours = hourlyForecast
     .filter(h => userProfile.typicalOutdoorHours.includes(h.hour) && h.aqi <= aqiThreshold)
@@ -132,6 +154,10 @@ export const getPersonalizedRecommendations = (
     if (userProfile.hasSensitivities) {
       personalAdvice.push("For sensitive individuals, wearing a mask is recommended if you must go outside.");
     }
+    
+    if (userProfile.healthCondition && userProfile.healthCondition !== 'none') {
+      personalAdvice.push(`For your ${userProfile.healthCondition.replace('-', ' ')}, consider consulting your healthcare provider for specific guidance.`);
+    }
   } else {
     personalAdvice.push(`Best hours for your outdoor activities: ${filteredHours.map(h => `${h}:00`).join(', ')}`);
     
@@ -141,6 +167,10 @@ export const getPersonalizedRecommendations = (
     
     if (userProfile.hasSensitivities) {
       personalAdvice.push("Monitor your breathing and symptoms even during recommended hours.");
+    }
+    
+    if (userProfile.healthCondition && userProfile.healthCondition !== 'none') {
+      personalAdvice.push(`With your ${userProfile.healthCondition.replace('-', ' ')}, stay vigilant about any unusual symptoms even during recommended hours.`);
     }
   }
   

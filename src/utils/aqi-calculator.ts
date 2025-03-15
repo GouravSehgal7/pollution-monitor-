@@ -57,6 +57,197 @@ export const getRecommendations = (aqi: number): string[] => {
   return recommendations[category];
 };
 
+// Health conditions
+export type HealthCondition = 'asthma' | 'bronchitis' | 'copd' | 'heart-disease' | 'allergy' | 'none';
+
+// Get health-specific recommendations based on AQI and health condition
+export const getHealthBasedRecommendations = (aqi: number, condition: HealthCondition): string[] => {
+  const category = getAQICategory(aqi);
+  const recommendations: Record<HealthCondition, Record<AQICategory, string[]>> = {
+    'asthma': {
+      'good': [
+        'Good air quality - regular activities are fine',
+        'Ensure you have your reliever inhaler with you as a precaution',
+        'Monitor your symptoms if you spend extended time outdoors'
+      ],
+      'moderate': [
+        'Consider using your preventer inhaler before going outdoors',
+        'Take breaks during physical activities',
+        'Carry your reliever inhaler at all times'
+      ],
+      'unhealthy': [
+        'Limit outdoor activities to 30 minutes or less',
+        'Use your preventer inhaler as prescribed',
+        'Consider wearing an N95 mask outdoors',
+        'Stay hydrated to keep airways moist'
+      ],
+      'very-unhealthy': [
+        'Stay indoors with windows closed',
+        'Use air purifiers with HEPA filters',
+        'Take preventive doses of medications if prescribed by your doctor',
+        'Keep reliever medication readily accessible'
+      ],
+      'hazardous': [
+        'Do not go outdoors unless absolutely necessary',
+        'Contact your healthcare provider for additional precautions',
+        'Monitor peak flow readings more frequently',
+        'If you experience symptoms, follow your asthma action plan immediately'
+      ]
+    },
+    'bronchitis': {
+      'good': [
+        'You can engage in normal outdoor activities',
+        'Stay hydrated to help keep airway mucus thin',
+        'Consider gentle respiratory exercises in fresh air'
+      ],
+      'moderate': [
+        'Limit vigorous outdoor activities',
+        'Increase fluid intake to help thin mucus secretions',
+        'Monitor for any increase in coughing or mucus production'
+      ],
+      'unhealthy': [
+        'Stay indoors during peak pollution hours',
+        'Use a humidifier to keep airways moist',
+        'Take any prescribed medications regularly',
+        'Avoid smoking areas and other irritants'
+      ],
+      'very-unhealthy': [
+        'Remain indoors with air purification',
+        'Consider wearing an N95 mask if you must go outside',
+        'Contact your healthcare provider if symptoms worsen',
+        'Use steam inhalation to help clear airways'
+      ],
+      'hazardous': [
+        'Do not go outdoors',
+        'If breathing becomes difficult, seek medical attention',
+        'Use prescribed bronchodilators as directed',
+        'Avoid all respiratory irritants'
+      ]
+    },
+    'copd': {
+      'good': [
+        'Good opportunity for outdoor breathing exercises',
+        'Ensure oxygen equipment is with you if prescribed',
+        'Practice pursed-lip breathing in fresh air'
+      ],
+      'moderate': [
+        'Limit outdoor exposure to 1-2 hours',
+        'Use rescue inhalers before going outside if needed',
+        'Monitor oxygen levels if you have an oximeter'
+      ],
+      'unhealthy': [
+        'Stay indoors with air filtration',
+        'Use supplemental oxygen as prescribed',
+        'Keep all medications within easy reach',
+        'Avoid areas with smoke, dust, or strong odors'
+      ],
+      'very-unhealthy': [
+        'Do not leave home unless medically necessary',
+        'Use air purifiers in your living space',
+        'Increase medication as directed in your action plan',
+        'Contact your pulmonologist for advice'
+      ],
+      'hazardous': [
+        'Stay indoors with filtered air',
+        'Consider evacuation to an area with better air quality if possible',
+        'Seek immediate medical help if you experience increased difficulty breathing',
+        'Use your emergency action plan as directed by your healthcare provider'
+      ]
+    },
+    'heart-disease': {
+      'good': [
+        'Good air quality for cardiac rehabilitation exercises',
+        'Maintain your regular medication schedule',
+        'Stay properly hydrated during outdoor activities'
+      ],
+      'moderate': [
+        'Monitor your heart rate during outdoor activities',
+        'Take more frequent rest breaks',
+        'Keep nitroglycerin or other emergency medication with you'
+      ],
+      'unhealthy': [
+        'Avoid outdoor exertion',
+        'Monitor blood pressure more frequently',
+        'Stay in air-conditioned environments',
+        'Watch for unusual symptoms like increased fatigue or chest discomfort'
+      ],
+      'very-unhealthy': [
+        'Remain indoors',
+        'Postpone any non-essential travel',
+        'Follow your cardiac care plan closely',
+        'Contact your cardiologist if you notice any changes in symptoms'
+      ],
+      'hazardous': [
+        'Do not go outdoors',
+        'Ensure you have sufficient medication supplies',
+        'Have emergency contact information readily available',
+        'If you experience chest pain, shortness of breath, or unusual symptoms, seek emergency care immediately'
+      ]
+    },
+    'allergy': {
+      'good': [
+        'Good time for outdoor activities, but monitor pollen counts',
+        'Consider wearing sunglasses to protect eyes from allergens',
+        'Shower after spending time outdoors to remove allergens'
+      ],
+      'moderate': [
+        'Take antihistamines before going outside if recommended by your doctor',
+        'Limit outdoor time during high pollen hours (typically 5-10 AM)',
+        'Rinse sinuses with saline after outdoor exposure'
+      ],
+      'unhealthy': [
+        'Stay indoors with windows closed, especially during windy days',
+        'Use air purifiers with HEPA filters',
+        'Consider wearing a mask outdoors',
+        'Take prescribed allergy medications regularly'
+      ],
+      'very-unhealthy': [
+        'Avoid all outdoor activities',
+        'Use air conditioning instead of opening windows',
+        'Shower and change clothes if you've been outdoors',
+        'Monitor for increased allergy symptoms or asthmatic responses'
+      ],
+      'hazardous': [
+        'Stay indoors with air purification',
+        'Contact your allergist if symptoms become severe',
+        'Keep rescue medications accessible',
+        'Consider wearing a mask even indoors if air filtration is inadequate'
+      ]
+    },
+    'none': {
+      'good': [
+        'Enjoy outdoor activities without restrictions',
+        'Great time for exercise and recreation',
+        'No special precautions needed'
+      ],
+      'moderate': [
+        'Most people can continue normal activities',
+        'Stay hydrated when outdoors',
+        'Monitor for any unusual respiratory symptoms'
+      ],
+      'unhealthy': [
+        'Consider reducing prolonged outdoor exertion',
+        'Take more frequent breaks during outdoor activities',
+        'People with occasional respiratory issues should be cautious'
+      ],
+      'very-unhealthy': [
+        'Limit outdoor activities when possible',
+        'Consider wearing masks for necessary outdoor trips',
+        'Use air purifiers indoors',
+        'Monitor for any respiratory symptoms'
+      ],
+      'hazardous': [
+        'Avoid outdoor activities',
+        'Wear N95 masks if you must go outside',
+        'Keep windows and doors closed',
+        'Everyone should monitor for respiratory symptoms'
+      ]
+    }
+  };
+
+  return recommendations[condition][category];
+};
+
 // Calculate best time to go outside based on AQI forecast
 export const calculateBestTimeToGoOut = (forecasts: { hour: number; aqi: number }[]): number[] => {
   // Return the hours with the lowest AQI values

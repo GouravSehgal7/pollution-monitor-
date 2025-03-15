@@ -1,8 +1,8 @@
 
 import { useAQI } from "@/context/AQIContext";
-import { getRecommendations, getAQICategory } from "@/utils/aqi-calculator";
+import { getRecommendations, getAQICategory, HealthCondition } from "@/utils/aqi-calculator";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, CheckCircle, Users, ArrowRight } from "lucide-react";
+import { Clock, CheckCircle, Users, ArrowRight, Heart } from "lucide-react";
 
 const Recommendations = () => {
   const { currentAQI, personalizedRecommendations, hourlyForecast } = useAQI();
@@ -74,6 +74,25 @@ const Recommendations = () => {
           </div>
         )}
         
+        {/* Health condition specific recommendations */}
+        {personalizedRecommendations && personalizedRecommendations.healthRecommendations && personalizedRecommendations.healthRecommendations.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-base font-medium flex items-center mb-3">
+              <Heart size={16} className="mr-2 text-primary" />
+              Health-Specific Recommendations
+            </h3>
+            
+            <ul className="space-y-2">
+              {personalizedRecommendations.healthRecommendations.map((rec, index) => (
+                <li key={index} className="flex items-start">
+                  <CheckCircle size={16} className="mr-2 mt-0.5 text-primary" />
+                  <span className="text-sm">{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
         {/* General recommendations */}
         <div className="mb-6">
           <h3 className="text-base font-medium flex items-center mb-3">
@@ -92,7 +111,7 @@ const Recommendations = () => {
         </div>
         
         {/* Personalized advice */}
-        {personalizedRecommendations && (
+        {personalizedRecommendations && personalizedRecommendations.personalAdvice && (
           <div>
             <h3 className="text-base font-medium flex items-center mb-3">
               <ArrowRight size={16} className="mr-2 text-primary" />
