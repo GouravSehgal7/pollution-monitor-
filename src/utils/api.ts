@@ -1,7 +1,7 @@
 // API token for WAQI
 const WAQI_TOKEN = 'b88abf98bd46a6bfdf78557ded1699691e2ace94';
-// Meersens API key
-const MEERSENS_API_KEY = 'Y3lV8N2UnqoMjSonpTpljle9jHaIXhWp';
+// Meersens API key - in a real application, this should be stored securely
+const MEERSENS_API_KEY = 'your-meersens-api-key';
 const BASE_URL = 'https://api.waqi.info';
 const LOCAL_API_URL = 'http://localhost:5000/api';
 const MEERSENS_URL = 'https://api.meersens.com/environment';
@@ -90,21 +90,7 @@ export interface EnhancedAQIPrediction {
   timestamp: string;
 }
 
-export interface MeersensWaterQualityData {
-  index: number;
-  status: string;
-  parameters: {
-    [key: string]: number;
-  };
-  timestamp: string;
-  safe: boolean;
-}
-
-export interface MeersensWaterQualityResponse {
-  status: string;
-  data: MeersensWaterQualityData;
-}
-
+// Get current AQI data based on geolocation
 export const getCurrentAQI = async (
   latitude?: number,
   longitude?: number
@@ -132,6 +118,7 @@ export const getCurrentAQI = async (
   }
 };
 
+// Get AQI forecast for next few days
 export const getAQIForecast = async (stationId: number): Promise<AQIData> => {
   try {
     const url = `${BASE_URL}/feed/@${stationId}/?token=${WAQI_TOKEN}`;
@@ -149,6 +136,7 @@ export const getAQIForecast = async (stationId: number): Promise<AQIData> => {
   }
 };
 
+// Get nearby stations
 export const getNearbyStations = async (
   latitude: number,
   longitude: number,
@@ -170,6 +158,7 @@ export const getNearbyStations = async (
   }
 };
 
+// Get water quality data from our Flask API
 export const getWaterQuality = async (): Promise<WaterQualityData> => {
   try {
     const response = await fetch(`${LOCAL_API_URL}/water/current`);
@@ -195,6 +184,7 @@ export const getWaterQuality = async (): Promise<WaterQualityData> => {
   }
 };
 
+// Get water quality history
 export const getWaterQualityHistory = async (): Promise<WaterQualityData[]> => {
   try {
     const response = await fetch(`${LOCAL_API_URL}/water/history`);
@@ -208,6 +198,7 @@ export const getWaterQualityHistory = async (): Promise<WaterQualityData[]> => {
   }
 };
 
+// Get traffic data
 export const getTrafficData = async (): Promise<TrafficData> => {
   try {
     const response = await fetch(`${LOCAL_API_URL}/traffic/current`);
@@ -227,6 +218,7 @@ export const getTrafficData = async (): Promise<TrafficData> => {
   }
 };
 
+// Get traffic history
 export const getTrafficHistory = async (): Promise<TrafficData[]> => {
   try {
     const response = await fetch(`${LOCAL_API_URL}/traffic/history`);
@@ -240,6 +232,7 @@ export const getTrafficHistory = async (): Promise<TrafficData[]> => {
   }
 };
 
+// Enhance AQI prediction with traffic data
 export const getEnhancedAQIPrediction = async (baseAQI: number, location: {lat: number, lng: number}): Promise<EnhancedAQIPrediction> => {
   try {
     const response = await fetch(`${LOCAL_API_URL}/aqi/enhance`, {
@@ -274,15 +267,24 @@ export const getEnhancedAQIPrediction = async (baseAQI: number, location: {lat: 
   }
 };
 
+// Get enhanced AQI data from Meersens API
 export const getMeersensAQIData = async (
   latitude: number,
   longitude: number
 ): Promise<MeersensAQIData | null> => {
   try {
+    // First, attempt to use our local enhanced prediction as a fallback
     const baseAQIResponse = await getCurrentAQI(latitude, longitude);
     const baseAQI = baseAQIResponse.aqi;
     const enhancedPrediction = await getEnhancedAQIPrediction(baseAQI, {lat: latitude, lng: longitude});
     
+    // Simulate Meersens API response with our enhanced data
+    // In a real app, you would use the actual Meersens API endpoint
+    // const url = `${MEERSENS_URL}/air-quality?lat=${latitude}&lng=${longitude}&key=${MEERSENS_API_KEY}`;
+    // const response = await fetch(url);
+    // const meersensData = await response.json();
+    
+    // Simulated response using our enhanced prediction
     const meersensData: MeersensAQIData = {
       aqi: enhancedPrediction.enhanced_aqi,
       dominentpol: baseAQIResponse.dominentpol || 'pm25',
@@ -296,7 +298,7 @@ export const getMeersensAQIData = async (
       },
       additional_factors: {
         traffic_impact: enhancedPrediction.factors.traffic,
-        industrial_proximity: 1.0,
+        industrial_proximity: 1.0, // Simulated value
         weather_influence: enhancedPrediction.factors.weather
       }
     };
@@ -308,39 +310,7 @@ export const getMeersensAQIData = async (
   }
 };
 
-export const getMeersensWaterQuality = async (
-  latitude: number, 
-  longitude: number
-): Promise<WaterQualityData> => {
-  try {
-    const url = `${MEERSENS_URL}/public/water/current?lat=${latitude}&lng=${longitude}&key=${MEERSENS_API_KEY}`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch Meersens water quality data');
-    }
-    
-    const data = await response.json();
-    
-    return {
-      index: data.quality_index || 50,
-      status: data.quality_level || 'moderate',
-      parameters: data.parameters || {
-        ph: data.ph || 7.0,
-        turbidity: data.turbidity || 2.0,
-        dissolvedOxygen: data.dissolved_oxygen || 8.0,
-        conductivity: data.conductivity || 450
-      },
-      timestamp: data.timestamp || new Date().toISOString(),
-      safe: data.is_safe !== undefined ? data.is_safe : true,
-      last_updated: data.timestamp || new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error fetching Meersens water quality data:', error);
-    return getWaterQuality();
-  }
-};
-
+// User location
 export const getUserLocation = (): Promise<GeolocationPosition> => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
