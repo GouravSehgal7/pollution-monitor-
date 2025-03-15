@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getWaterQuality, getWaterQualityHistory, WaterQualityData } from '@/utils/api';
+import { getWaterQuality, getWaterQualityHistory, getMeersensWaterQuality, WaterQualityData } from '@/utils/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Droplet, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
@@ -9,14 +9,26 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useAQI } from '@/context/AQIContext';
 
 const WaterQualityMonitor: React.FC = () => {
   const [playAlert, setPlayAlert] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [useMeersensAPI, setUseMeersensAPI] = useState(true);
+  const { location } = useAQI();
 
+  // Query for water quality data based on the selected API
   const { data: waterData, isLoading: waterLoading } = useQuery({
-    queryKey: ['waterQuality'],
-    queryFn: getWaterQuality,
+    queryKey: ['waterQuality', useMeersensAPI],
+    queryFn: async () => {
+      if (useMeersensAPI && location) {
+        return getMeersensWaterQuality(location.lat, location.lng);
+      } else {
+        return getWaterQuality();
+      }
+    },
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
@@ -90,6 +102,17 @@ const WaterQualityMonitor: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <Label htmlFor="meersens-toggle" className="text-xs text-muted-foreground">
+              {useMeersensAPI ? 'Using Meersens API' : 'Using Local API'}
+            </Label>
+            <Switch
+              id="meersens-toggle"
+              checked={useMeersensAPI}
+              onCheckedChange={setUseMeersensAPI}
+            />
+          </div>
+          
           {waterLoading ? (
             <div className="h-[120px] flex items-center justify-center">
               <p className="text-muted-foreground">Loading water quality data...</p>
