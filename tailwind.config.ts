@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+                aqi: {
+                    good: '#A8E05F',
+                    moderate: '#FDD74B',
+                    unhealthy: '#FE9B57',
+                    'very-unhealthy': '#FE6A69',
+                    hazardous: '#A97ABC',
+                },
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -70,25 +78,53 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
-				}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+                'fade-in': {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' }
+                },
+                'fade-up': {
+                    '0%': { 
+                        opacity: '0',
+                        transform: 'translateY(10px)'
+                    },
+                    '100%': {
+                        opacity: '1',
+                        transform: 'translateY(0)'
+                    }
+                },
+                'pulse-gentle': {
+                    '0%, 100%': { 
+                        opacity: '1'
+                    },
+                    '50%': {
+                        opacity: '0.7'
+                    }
+                },
+                'blur-in': {
+                    '0%': {
+                        filter: 'blur(5px)',
+                        opacity: '0'
+                    },
+                    '100%': {
+                        filter: 'blur(0)',
+                        opacity: '1'
+                    }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+                'fade-in': 'fade-in 0.5s ease-out forwards',
+                'fade-up': 'fade-up 0.6s ease-out forwards',
+                'pulse-gentle': 'pulse-gentle 3s infinite ease-in-out',
+                'blur-in': 'blur-in 0.7s ease-out forwards'
 			}
 		}
 	},
