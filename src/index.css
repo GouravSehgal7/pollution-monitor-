@@ -1,126 +1,88 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 210 40% 99%;
-    --foreground: 222.2 84% 4.9%;
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 210 100% 50%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 210 100% 50%;
-
-    --radius: 0.75rem;
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 100% 50%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 60%;
+  to {
+    transform: rotate(360deg);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
   }
+}
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
-  }
+.card {
+  padding: 2em;
+}
 
-  /* Glass effect */
-  .glass {
-    @apply backdrop-blur-md bg-white/70 dark:bg-black/30 border border-white/10 shadow-lg;
-  }
+.read-the-docs {
+  color: #888;
+}
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+/* AQI Colors if not already defined */
+.bg-aqi-good {
+  @apply bg-green-500;
+}
 
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
+.bg-aqi-moderate {
+  @apply bg-yellow-500;
+}
 
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 dark:bg-slate-700 rounded-full;
-  }
+.bg-aqi-unhealthy {
+  @apply bg-orange-500;
+}
 
-  /* AQI category styling */
-  .aqi-good {
-    @apply bg-aqi-good text-slate-800;
-  }
-  
-  .aqi-moderate {
-    @apply bg-aqi-moderate text-slate-800;
-  }
-  
-  .aqi-unhealthy {
-    @apply bg-aqi-unhealthy text-white;
-  }
-  
-  .aqi-very-unhealthy {
-    @apply bg-aqi-very-unhealthy text-white;
-  }
-  
-  .aqi-hazardous {
-    @apply bg-aqi-hazardous text-white;
-  }
+.bg-aqi-very-unhealthy {
+  @apply bg-red-500;
+}
 
-  /* Card transitions */
-  .card-transition {
-    @apply transition-all duration-300 ease-in-out;
+.bg-aqi-hazardous {
+  @apply bg-purple-600;
+}
+
+.card-transition {
+  @apply transition-all duration-300;
+}
+
+.glass {
+  @apply bg-opacity-95 backdrop-blur-sm;
+}
+
+.animate-pulse-gentle {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
