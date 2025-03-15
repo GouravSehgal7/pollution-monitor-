@@ -70,13 +70,13 @@ const AQIMonitor = () => {
             <div className="text-center">
               <div className="text-5xl font-bold">{currentAQI.aqi}</div>
               <div className={`text-lg font-medium mt-1 ${
-                getAQICategory(Number(currentAQI.aqi)) === 'good' ? 'text-green-500' : 
-                getAQICategory(Number(currentAQI.aqi)) === 'moderate' ? 'text-yellow-500' : 
-                getAQICategory(Number(currentAQI.aqi)) === 'unhealthy' ? 'text-orange-500' : 
-                getAQICategory(Number(currentAQI.aqi)) === 'very-unhealthy' ? 'text-red-500' : 
+                getAQICategory(currentAQI.aqi) === 'good' ? 'text-green-500' : 
+                getAQICategory(currentAQI.aqi) === 'moderate' ? 'text-yellow-500' : 
+                getAQICategory(currentAQI.aqi) === 'unhealthy' ? 'text-orange-500' : 
+                getAQICategory(currentAQI.aqi) === 'very-unhealthy' ? 'text-red-500' : 
                 'text-purple-500'
               }`}>
-                {getAQIText(Number(currentAQI.aqi))}
+                {getAQIText(currentAQI.aqi)}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 Updated {new Date(currentAQI.time * 1000).toLocaleTimeString()}
@@ -87,7 +87,7 @@ const AQIMonitor = () => {
               <Progress 
                 value={Math.min(100, (Number(currentAQI.aqi) / 300) * 100)} 
                 className="h-2.5"
-                indicatorClassName={getAQIColor(Number(currentAQI.aqi))}
+                indicatorClassName={getAQIColor(currentAQI.aqi)}
               />
               
               <div className="flex justify-between text-xs text-muted-foreground">
