@@ -24,12 +24,18 @@ const TrafficMonitor: React.FC = () => {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  console.log(trafficHistory);
+  
+
   // Format traffic history data for chart
   const chartData = trafficHistory?.map((item: TrafficData) => ({
-    time: format(parseISO(item.last_updated), 'HH:mm'),
+    time: item.last_updated ? format(parseISO(item.last_updated), 'HH:mm') : 'Unknown',
     vehicles: item.vehicles_per_hour,
     factor: item.pollution_factor
   })) || [];
+
+  console.log("///////////",chartData);
+  
 
   // Get traffic congestion color
   const getCongestionColor = (level: string) => {
@@ -66,13 +72,19 @@ const TrafficMonitor: React.FC = () => {
   // Play alert sound
   useEffect(() => {
     let audio: HTMLAudioElement | null = null;
-    
+  
     if (playAlert) {
       audio = new Audio('/alert-sound.mp3');
       audio.volume = 0.5;
-      audio.play().catch(e => console.error("Error playing audio", e));
+  
+      const playAudio = () => {
+        audio?.play().catch(e => console.error("Error playing audio", e));
+        document.removeEventListener('click', playAudio);
+      };
+  
+      document.addEventListener('click', playAudio);
     }
-    
+  
     return () => {
       if (audio) {
         audio.pause();
@@ -80,7 +92,7 @@ const TrafficMonitor: React.FC = () => {
       }
     };
   }, [playAlert]);
-
+  
   const pollutionInfo = trafficData ? getPollutionSeverity(trafficData.pollution_factor) : { color: 'text-gray-500', text: 'Unknown' };
 
   return (

@@ -10,6 +10,7 @@ import {
   CardTitle, 
   CardDescription 
 } from "@/components/ui/card";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
@@ -28,6 +29,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import TrafficMonitor from "@/components/TrafficMonitor";
+import Header from "@/components/Header";
 
 const TrafficMonitoring = () => {
   useEffect(() => {
@@ -48,6 +50,8 @@ const TrafficMonitoring = () => {
     refetchInterval: 60000,
   });
 
+  console.log();
+  
   const { data: enhancedAQI } = useQuery({
     queryKey: ["enhancedAQI", currentAQI?.aqi, location],
     queryFn: () => getEnhancedAQIPrediction(
@@ -59,14 +63,32 @@ const TrafficMonitoring = () => {
   });
 
   // Format history data for charts
-  const historyData = trafficHistory?.map((item) => ({
-    time: format(parseISO(item.last_updated), "HH:mm"),
-    date: format(parseISO(item.last_updated), "MMM dd"),
-    hour: parseInt(format(parseISO(item.last_updated), "HH")),
-    vehicles: item.vehicles_per_hour,
-    congestion: item.congestion_level,
-    pollution: item.pollution_factor,
-  })) || [];
+  const historyData = trafficHistory?.map((item) => {
+    if (!item.last_updated) {
+      console.warn("Invalid date in trafficHistory:", item);
+      return null; // Skip invalid entries
+    }
+
+    try {
+      console.log("Parsing date:", item.last_updated);
+      const parsedDate = parseISO(item.last_updated);
+      return {
+        time: format(parsedDate, "HH:mm"),
+        date: format(parsedDate, "MMM dd"),
+        hour: parseInt(format(parsedDate, "HH")),
+        vehicles: item.vehicles_per_hour,
+        congestion: item.congestion_level,
+        pollution: item.pollution_factor,
+      };
+    } catch (error) {
+      console.error("Error parsing date:", item.last_updated, error);
+      return null; // Skip invalid entries
+    }
+}).filter(Boolean) || [];
+
+console.log("Traffic History Data:", trafficHistory);
+console.log("Processed History Data:", historyData);
+
 
   // Get congestion color
   const getCongestionColor = (level) => {
@@ -81,6 +103,7 @@ const TrafficMonitoring = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+      <Header/>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 flex items-center">
           <Car className="mr-2" /> Traffic Monitoring
@@ -203,7 +226,7 @@ const TrafficMonitoring = () => {
           </Card>
         </div>
         
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <Tabs defaultValue="hourly">
             <TabsList className="mb-4">
               <TabsTrigger value="hourly">Hourly Analysis</TabsTrigger>
@@ -305,7 +328,7 @@ const TrafficMonitoring = () => {
             </TabsContent>
           </Tabs>
         </div>
-        
+         */}
         {trafficData?.congestion_level === 'severe' && (
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />

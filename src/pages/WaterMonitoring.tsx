@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Header from "@/components/Header";
 
 const WaterMonitoring = () => {
   useEffect(() => {
@@ -89,6 +90,7 @@ const WaterMonitoring = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <Header/>
       <div className="mb-8">
         <h1 className="text-3xl font-semibold mb-2 flex items-center">
           <DropletIcon className="h-6 w-6 mr-2 text-blue-500" />

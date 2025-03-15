@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import WaterMonitoring from "./pages/WaterMonitoring";
 import TrafficMonitoring from "./pages/TrafficMonitoring";
 import NotFound from "./pages/NotFound";
-
+import Uv from "./pages/uv";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -25,6 +25,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/water" element={<WaterMonitoring />} />
               <Route path="/traffic" element={<TrafficMonitoring />} />
+              <Route path="/uv" element={<Uv />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

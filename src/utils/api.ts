@@ -1,10 +1,12 @@
+import axios from 'axios';
+
 // API token for WAQI
 const WAQI_TOKEN = 'b88abf98bd46a6bfdf78557ded1699691e2ace94';
 // Meersens API key - in a real application, this should be stored securely
-const MEERSENS_API_KEY = 'your-meersens-api-key';
+const MEERSENS_API_KEY = 'Y3lV8N2UnqoMjSonpTpljle9jHaIXhWp';
 const BASE_URL = 'https://api.waqi.info';
 const LOCAL_API_URL = 'http://localhost:5000/api';
-const MEERSENS_URL = 'https://api.meersens.com/environment';
+// const MEERSENS_URL = 'https://api.meersens.com/environment';
 
 export interface AQIData {
   aqi: number;
@@ -111,52 +113,54 @@ export const getCurrentAQI = async (
       throw new Error('Failed to fetch AQI data');
     }
 
+    
     return data.data;
   } catch (error) {
     console.error('Error fetching AQI data:', error);
     throw error;
   }
 };
+//working
 
 // Get AQI forecast for next few days
-export const getAQIForecast = async (stationId: number): Promise<AQIData> => {
-  try {
-    const url = `${BASE_URL}/feed/@${stationId}/?token=${WAQI_TOKEN}`;
-    const response = await fetch(url);
-    const data: AQIResponse = await response.json();
+// export const getAQIForecast = async (stationId: number): Promise<AQIData> => {
+//   try {
+//     const url = `${BASE_URL}/feed/@${stationId}/?token=${WAQI_TOKEN}`;
+//     const response = await fetch(url);
+//     const data: AQIResponse = await response.json();
 
-    if (data.status !== 'ok') {
-      throw new Error('Failed to fetch AQI forecast');
-    }
-
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching AQI forecast:', error);
-    throw error;
-  }
-};
+//     if (data.status !== 'ok') {
+//       throw new Error('Failed to fetch AQI forecast');
+//     }
+//     console.log(data.data);
+//     return data.data;
+//   } catch (error) {
+//     console.error('Error fetching AQI forecast:', error);
+//     throw error;
+//   }
+// };
 
 // Get nearby stations
-export const getNearbyStations = async (
-  latitude: number,
-  longitude: number,
-  range = 50 // km
-): Promise<AQIData[]> => {
-  try {
-    const url = `${BASE_URL}/map/bounds/?latlng=${latitude - range/111},${longitude - range/111},${latitude + range/111},${longitude + range/111}&token=${WAQI_TOKEN}`;
-    const response = await fetch(url);
-    const data = await response.json();
+// export const getNearbyStations = async (
+//   latitude: number,
+//   longitude: number,
+//   range = 50 // km
+// ): Promise<AQIData[]> => {
+//   try {
+//     const url = `${BASE_URL}/map/bounds/?latlng=${latitude - range/111},${longitude - range/111},${latitude + range/111},${longitude + range/111}&token=${WAQI_TOKEN}`;
+//     const response = await fetch(url);
+//     const data = await response.json();
 
-    if (data.status !== 'ok') {
-      throw new Error('Failed to fetch nearby stations');
-    }
+//     if (data.status !== 'ok') {
+//       throw new Error('Failed to fetch nearby stations');
+//     }
 
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching nearby stations:', error);
-    throw error;
-  }
-};
+//     return data.data;
+//   } catch (error) {
+//     console.error('Error fetching nearby stations:', error);
+//     throw error;
+//   }
+// };
 
 // Get water quality data from our Flask API
 export const getWaterQuality = async (): Promise<WaterQualityData> => {
@@ -225,12 +229,22 @@ export const getTrafficHistory = async (): Promise<TrafficData[]> => {
     if (!response.ok) {
       throw new Error('Failed to fetch traffic history');
     }
-    return await response.json();
+    const data = await response.json();
+
+    // Fix timestamp format by removing microseconds
+    const formattedData = data.map((entry: any) => ({
+      ...entry,
+      timestamp: new Date(entry.timestamp.split(".")[0]) // Removes microseconds before parsing
+    }));
+
+    // console.log("######################", formattedData);
+    return formattedData;
   } catch (error) {
     console.error('Error fetching traffic history:', error);
     return [];
   }
 };
+
 
 // Enhance AQI prediction with traffic data
 export const getEnhancedAQIPrediction = async (baseAQI: number, location: {lat: number, lng: number}): Promise<EnhancedAQIPrediction> => {
@@ -316,11 +330,69 @@ export const getUserLocation = (): Promise<GeolocationPosition> => {
     if (!navigator.geolocation) {
       reject(new Error("Geolocation is not supported by your browser"));
     } else {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(position); // Logs the GeolocationPosition object
+          resolve(position);
+        },
+        (error) => {
+          console.error(error); // Logs the error
+          reject(error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
     }
   });
 };
+//working
+
+export const getCurrentuvquality = async () =>{
+  const link = 'https://api.meersens.com/environment/public/uv/current';
+  try {
+    const location = await getUserLocation()
+    // console.log();
+    const data = await axios.get(link,{
+      params: { 
+        lat:location.coords.latitude-1,
+        lng: location.coords.longitude-2,
+        health_recommendations: true
+      },
+      headers: {'apikey': MEERSENS_API_KEY }
+    })
+    if(data.status === 200 ){
+      // console.log(data);
+      return data
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
+export const getCurrentnoisequality = async () =>{
+  const link = 'https://api.meersens.com/environment/public/air/current';
+  try {
+    const location = await getUserLocation()
+    // console.log();
+    const data = await axios.get(link,{
+      params: { 
+        lat:location.coords.latitude,
+        lng: location.coords.longitude,
+        health_recommendations: true
+      },
+      headers: {'apikey': MEERSENS_API_KEY }
+    })
+    if(data.status === 200 ){
+      // console.log(data);
+      return data
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+getCurrentnoisequality()

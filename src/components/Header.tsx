@@ -21,6 +21,7 @@ const Header = () => {
     { name: "Dashboard", path: "/" },
     { name: "Water Monitoring", path: "/water" },
     { name: "Traffic Monitoring", path: "/traffic" },
+    {name:"Uv Quality",path:"/uv"}
   ];
 
   const isActive = (path: string) => {
@@ -109,7 +110,7 @@ const Header = () => {
                 <MenuIcon className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64 sm:w-80">
+            <SheetContent side="right" className="w-64 sm:w-80 bg-white">
               <nav className="flex flex-col gap-4 mt-8">
                 {navLinks.map((link) => (
                   <Link
