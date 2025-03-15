@@ -5,7 +5,7 @@ const WAQI_TOKEN = 'b88abf98bd46a6bfdf78557ded1699691e2ace94';
 // Meersens API key - in a real application, this should be stored securely
 const MEERSENS_API_KEY = 'Y3lV8N2UnqoMjSonpTpljle9jHaIXhWp';
 const BASE_URL = 'https://api.waqi.info';
-const LOCAL_API_URL = 'http://localhost:5000/api';
+const LOCAL_API_URL = 'https://flask-backend-dzye.onrender.com/api';
 // const MEERSENS_URL = 'https://api.meersens.com/environment';
 
 export interface AQIData {
