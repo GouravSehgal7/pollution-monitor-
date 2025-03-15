@@ -31,7 +31,7 @@ export const getRecommendations = (aqi: number): string[] => {
     ],
     moderate: [
       'Sensitive individuals should consider reducing prolonged outdoor exertion',
-      'It's a good day for most outdoor activities',
+      'It\'s a good day for most outdoor activities',
       'Consider morning or evening for strenuous exercises'
     ],
     unhealthy: [
