@@ -204,7 +204,7 @@ export const getHealthBasedRecommendations = (aqi: number, condition: HealthCond
       'very-unhealthy': [
         'Avoid all outdoor activities',
         'Use air conditioning instead of opening windows',
-        'Shower and change clothes if you've been outdoors',
+        'Shower and change clothes if you\'ve been outdoors',
         'Monitor for increased allergy symptoms or asthmatic responses'
       ],
       'hazardous': [
