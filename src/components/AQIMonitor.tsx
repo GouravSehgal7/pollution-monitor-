@@ -101,15 +101,15 @@ const AQIMonitor = () => {
               <div className="text-sm">
                 <div className="flex justify-between mb-1">
                   <span>PM2.5</span>
-                  <span>{currentAQI.iaqi.pm25?.v || 'N/A'}</span>
+                  <span>{currentAQI.iaqi.pm25?.v ?? 'N/A'}</span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>PM10</span>
-                  <span>{currentAQI.iaqi.pm10?.v || 'N/A'}</span>
+                  <span>{currentAQI.iaqi.pm10?.v ?? 'N/A'}</span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>Ozone</span>
-                  <span>{currentAQI.iaqi.o3?.v || 'N/A'}</span>
+                  <span>{currentAQI.iaqi.o3?.v ?? 'N/A'}</span>
                 </div>
               </div>
             </div>
