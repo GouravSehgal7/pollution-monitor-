@@ -85,7 +85,7 @@ const AQIMonitor = () => {
             
             <div className="space-y-2">
               <Progress 
-                value={Math.min(100, (currentAQI.aqi / 300) * 100)} 
+                value={Math.min(100, (Number(currentAQI.aqi) / 300) * 100)} 
                 className="h-2.5"
                 indicatorClassName={getAQIColor(currentAQI.aqi)}
               />
