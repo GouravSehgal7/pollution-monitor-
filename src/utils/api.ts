@@ -2,6 +2,7 @@
 // API token for WAQI
 const WAQI_TOKEN = 'b88abf98bd46a6bfdf78557ded1699691e2ace94';
 const BASE_URL = 'https://api.waqi.info';
+const LOCAL_API_URL = 'http://localhost:5000/api';
 
 export interface AQIData {
   aqi: number;
@@ -45,6 +46,26 @@ export interface WaterQualityData {
   status: string;
   parameters: {
     [key: string]: number;
+  };
+  timestamp: string;
+  safe: boolean;
+  last_updated?: string;
+}
+
+export interface TrafficData {
+  vehicles_per_hour: number;
+  congestion_level: string;
+  last_updated: string;
+  pollution_factor: number;
+}
+
+export interface EnhancedAQIPrediction {
+  original_aqi: number;
+  enhanced_aqi: number;
+  factors: {
+    traffic: number;
+    weather: number;
+    time_of_day: number;
   };
   timestamp: string;
 }
@@ -117,20 +138,113 @@ export const getNearbyStations = async (
   }
 };
 
-// Mock function for water quality (as this would require a separate API)
+// Get water quality data from our Flask API
 export const getWaterQuality = async (): Promise<WaterQualityData> => {
-  // This is a mock implementation as we don't have a real water quality API
-  return {
-    index: Math.floor(Math.random() * 100),
-    status: 'good',
-    parameters: {
-      ph: 7.2,
-      turbidity: 1.8,
-      dissolvedOxygen: 8.5,
-      conductivity: 450,
-    },
-    timestamp: new Date().toISOString()
-  };
+  try {
+    const response = await fetch(`${LOCAL_API_URL}/water/current`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch water quality data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching water quality data:', error);
+    // Fallback to mock data if API is not available
+    return {
+      index: Math.floor(Math.random() * 100),
+      status: 'good',
+      parameters: {
+        ph: 7.2,
+        turbidity: 1.8,
+        dissolvedOxygen: 8.5,
+        conductivity: 450,
+      },
+      timestamp: new Date().toISOString(),
+      safe: true
+    };
+  }
+};
+
+// Get water quality history
+export const getWaterQualityHistory = async (): Promise<WaterQualityData[]> => {
+  try {
+    const response = await fetch(`${LOCAL_API_URL}/water/history`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch water quality history');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching water quality history:', error);
+    return [];
+  }
+};
+
+// Get traffic data
+export const getTrafficData = async (): Promise<TrafficData> => {
+  try {
+    const response = await fetch(`${LOCAL_API_URL}/traffic/current`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch traffic data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching traffic data:', error);
+    // Fallback to mock data if API is not available
+    return {
+      vehicles_per_hour: 350,
+      congestion_level: "moderate",
+      last_updated: new Date().toISOString(),
+      pollution_factor: 1.2
+    };
+  }
+};
+
+// Get traffic history
+export const getTrafficHistory = async (): Promise<TrafficData[]> => {
+  try {
+    const response = await fetch(`${LOCAL_API_URL}/traffic/history`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch traffic history');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching traffic history:', error);
+    return [];
+  }
+};
+
+// Enhance AQI prediction with traffic data
+export const getEnhancedAQIPrediction = async (baseAQI: number, location: {lat: number, lng: number}): Promise<EnhancedAQIPrediction> => {
+  try {
+    const response = await fetch(`${LOCAL_API_URL}/aqi/enhance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        base_aqi: baseAQI,
+        location: location
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to enhance AQI prediction');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error enhancing AQI prediction:', error);
+    // Fallback to mock enhanced data
+    return {
+      original_aqi: baseAQI,
+      enhanced_aqi: Math.round(baseAQI * 1.1),
+      factors: {
+        traffic: 1.1,
+        weather: 1.0,
+        time_of_day: 1.0
+      },
+      timestamp: new Date().toISOString()
+    };
+  }
 };
 
 // User location

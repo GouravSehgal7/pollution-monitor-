@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AQIProvider } from "./context/AQIContext";
 import { LazyMotion, domAnimation } from "framer-motion";
 import Index from "./pages/Index";
+import WaterMonitoring from "./pages/WaterMonitoring";
+import TrafficMonitoring from "./pages/TrafficMonitoring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/water" element={<WaterMonitoring />} />
+              <Route path="/traffic" element={<TrafficMonitoring />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

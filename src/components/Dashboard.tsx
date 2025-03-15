@@ -1,10 +1,12 @@
 
 import { useAQI } from "@/context/AQIContext";
-import { getAQICategory, AQI_CATEGORIES } from "@/utils/aqi-calculator";
+import { getAQICategory, type AQICategory, AQI_CATEGORIES } from "@/utils/aqi-calculator";
 import { evaluateWaterQuality } from "@/utils/aqi-calculator";
 import AQIChart from "./AQIChart";
 import Recommendations from "./Recommendations";
 import AlertSettings from "./AlertSettings";
+import TrafficMonitor from "./TrafficMonitor";
+import WaterQualityMonitor from "./WaterQualityMonitor";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Droplet, MapPin, Wind, RefreshCw, Clock } from "lucide-react";
@@ -17,7 +19,8 @@ const Dashboard = () => {
     loading, 
     error, 
     location, 
-    personalizedRecommendations
+    personalizedRecommendations,
+    refreshData
   } = useAQI();
   
   const aqiValue = currentAQI?.aqi ?? 0;
@@ -104,6 +107,13 @@ const Dashboard = () => {
           <span className="text-sm">
             Updated {new Date(currentAQI.time.v * 1000).toLocaleTimeString()}
           </span>
+          <button 
+            onClick={() => refreshData()} 
+            className="ml-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Refresh data"
+          >
+            <RefreshCw size={14} />
+          </button>
         </motion.div>
       )}
       
@@ -252,6 +262,12 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+      </motion.div>
+      
+      {/* Traffic and Water Monitoring */}
+      <motion.div variants={childVariants} className="grid gap-6 md:grid-cols-2 mb-6">
+        <TrafficMonitor />
+        <WaterQualityMonitor />
       </motion.div>
       
       {/* Charts and Recommendations */}
