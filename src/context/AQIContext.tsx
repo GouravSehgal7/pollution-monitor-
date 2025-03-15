@@ -1,12 +1,13 @@
-
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { toast } from "sonner";
 import { 
   getCurrentAQI, 
   getWaterQuality, 
   getUserLocation,
+  getMeersensAQIData,
   AQIData,
-  WaterQualityData
+  WaterQualityData,
+  MeersensAQIData
 } from "../utils/api";
 import { 
   generateHourlyAQIForecast, 
@@ -37,6 +38,8 @@ interface AQIContextType {
     healthRecommendations: string[];
   } | null;
   refreshData: () => Promise<void>;
+  meersensData: MeersensAQIData | null;
+  playAlertSound: (type: 'water' | 'air') => void;
 }
 
 const defaultUserProfile: UserProfile = {
@@ -65,13 +68,16 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     personalAdvice: string[];
     healthRecommendations: string[];
   } | null>(null);
+  const [meersensData, setMeersensData] = useState<MeersensAQIData | null>(null);
 
-  // Check for threshold crossing
+  const playAlertSound = (type: 'water' | 'air') => {
+    const audio = new Audio(type === 'water' ? '/alarm-sound.mp3' : '/alert-sound.mp3');
+    audio.play().catch(err => console.error('Error playing sound:', err));
+  };
+
   const checkThresholds = (newAQI: number, previousAQI: number | null) => {
-    // AQI threshold alerts
     const thresholds = [50, 100, 150, 200, 300];
     
-    // Only alert if we have a previous reading and we've crossed a threshold
     if (previousAQI) {
       for (const threshold of thresholds) {
         if ((previousAQI < threshold && newAQI >= threshold) || 
@@ -91,7 +97,6 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Check water quality alerts
   const checkWaterQualityAlert = (quality: WaterQualityData) => {
     const evaluation = evaluateWaterQuality(quality.index);
     
@@ -103,13 +108,11 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Fetch data function
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Get user location
       let userLat, userLng;
       try {
         const position = await getUserLocation();
@@ -121,38 +124,46 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Continue without location
       }
 
-      // Get AQI data
       const aqiData = await getCurrentAQI(userLat, userLng);
       
-      // Check for AQI threshold crossing if we have previous data
       if (currentAQI) {
         checkThresholds(aqiData.aqi, currentAQI.aqi);
       }
       
       setCurrentAQI(aqiData);
       
-      // Generate forecasts
+      if (userLat && userLng) {
+        const enhancedData = await getMeersensAQIData(userLat, userLng);
+        if (enhancedData) {
+          setMeersensData(enhancedData);
+          
+          if (enhancedData.aqi > aqiData.aqi * 1.3) {
+            playAlertSound('air');
+            toast.warning("Enhanced AQI Alert", {
+              description: `Enhanced AQI calculation shows a higher pollution level (${enhancedData.aqi}) than standard measurements.`,
+              duration: 5000,
+            });
+          }
+        }
+      }
+      
       const hourly = generateHourlyAQIForecast(aqiData.aqi);
       const daily = generateDailyAQIForecast(aqiData.aqi);
       
       setHourlyForecast(hourly);
       setDailyForecast(daily);
       
-      // Get water quality data (mock)
       const waterData = await getWaterQuality();
       setWaterQuality(waterData);
       
-      // Check water quality alerts
       checkWaterQualityAlert(waterData);
       
-      // Generate personalized recommendations
       const recommendations = getPersonalizedRecommendations(
         aqiData.aqi,
         hourly,
         userProfile
       );
       
-      // Get health-specific recommendations
       const healthRecommendations = getHealthBasedRecommendations(
         aqiData.aqi,
         userProfile.healthCondition || 'none'
@@ -166,7 +177,6 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error("Error fetching data:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
       
-      // Show error toast
       toast.error("Error fetching data", {
         description: err instanceof Error ? err.message : "Unknown error occurred",
       });
@@ -175,7 +185,6 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Update user profile
   const updateUserProfile = (profile: Partial<UserProfile>) => {
     setUserProfile(prev => {
       const updated = { ...prev, ...profile };
@@ -184,24 +193,20 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  // Refresh data manually
   const refreshData = async () => {
     await fetchData();
   };
 
-  // Initial data fetch
   useEffect(() => {
     fetchData();
     
-    // Set up polling interval (every 10 minutes)
     const intervalId = setInterval(() => {
       fetchData();
     }, 10 * 60 * 1000);
     
     return () => clearInterval(intervalId);
   }, []);
-  
-  // Update recommendations when user profile changes
+
   useEffect(() => {
     if (currentAQI && hourlyForecast.length > 0) {
       const recommendations = getPersonalizedRecommendations(
@@ -233,7 +238,9 @@ export const AQIProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     userProfile,
     updateUserProfile,
     personalizedRecommendations,
-    refreshData
+    refreshData,
+    meersensData,
+    playAlertSound
   };
 
   return <AQIContext.Provider value={value}>{children}</AQIContext.Provider>;

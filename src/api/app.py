@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
@@ -136,20 +135,52 @@ def enhance_aqi_prediction():
     base_aqi = data.get('base_aqi', 50)
     location = data.get('location', {'lat': 0, 'lng': 0})
     
-    # Adjust AQI based on simulated traffic conditions
-    traffic_factor = random.uniform(0.8, 1.5)
-    weather_factor = random.uniform(0.9, 1.2)
-    time_factor = 1.1 if 7 <= datetime.now().hour <= 9 or 16 <= datetime.now().hour <= 19 else 1.0
+    # Enhanced model with Meersens-like factors
+    # Traffic factors - simulating real-world traffic impacts
+    time_of_day = datetime.now().hour
+    is_rush_hour = 7 <= time_of_day <= 9 or 16 <= time_of_day <= 19
+    is_weekend = datetime.now().weekday() >= 5
     
-    enhanced_aqi = round(base_aqi * traffic_factor * weather_factor * time_factor)
+    # Traffic factor calculation (higher during rush hours, lower on weekends)
+    base_traffic_factor = random.uniform(0.8, 1.5)
+    if is_rush_hour:
+        traffic_factor = base_traffic_factor * random.uniform(1.2, 1.5)
+    elif is_weekend:
+        traffic_factor = base_traffic_factor * random.uniform(0.6, 0.9)
+    else:
+        traffic_factor = base_traffic_factor
+    
+    # Weather factors (humidity, temperature, wind speed)
+    weather_factor = random.uniform(0.9, 1.2)
+    
+    # Time factors (diurnal patterns)
+    if 7 <= time_of_day <= 9:  # Morning rush
+        time_factor = 1.3
+    elif 16 <= time_of_day <= 19:  # Evening rush
+        time_factor = 1.2
+    elif 22 <= time_of_day or time_of_day <= 5:  # Night
+        time_factor = 0.8
+    else:  # Other times
+        time_factor = 1.0
+    
+    # Industrial proximity simulation (higher near industrial areas)
+    # In a real app, this would use location data to determine proximity
+    industrial_factor = random.uniform(1.0, 1.3)
+    
+    # Calculate enhanced AQI
+    enhanced_aqi = round(base_aqi * traffic_factor * weather_factor * time_factor * industrial_factor)
+    
+    # Ensure enhanced AQI is within realistic bounds
+    enhanced_aqi = min(enhanced_aqi, 500)  # AQI shouldn't exceed 500
     
     response = {
         "original_aqi": base_aqi,
         "enhanced_aqi": enhanced_aqi,
         "factors": {
-            "traffic": traffic_factor,
-            "weather": weather_factor,
-            "time_of_day": time_factor
+            "traffic": round(traffic_factor, 2),
+            "weather": round(weather_factor, 2),
+            "time_of_day": round(time_factor, 2),
+            "industrial": round(industrial_factor, 2)
         },
         "timestamp": datetime.now().isoformat()
     }

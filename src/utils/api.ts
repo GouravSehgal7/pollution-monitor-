@@ -1,8 +1,10 @@
-
 // API token for WAQI
 const WAQI_TOKEN = 'b88abf98bd46a6bfdf78557ded1699691e2ace94';
+// Meersens API key - in a real application, this should be stored securely
+const MEERSENS_API_KEY = 'your-meersens-api-key';
 const BASE_URL = 'https://api.waqi.info';
 const LOCAL_API_URL = 'http://localhost:5000/api';
+const MEERSENS_URL = 'https://api.meersens.com/environment';
 
 export interface AQIData {
   aqi: number;
@@ -57,6 +59,24 @@ export interface TrafficData {
   congestion_level: string;
   last_updated: string;
   pollution_factor: number;
+}
+
+export interface MeersensAQIData {
+  aqi: number;
+  dominentpol: string;
+  iaqi: {
+    [key: string]: number;
+  };
+  additional_factors: {
+    traffic_impact: number;
+    industrial_proximity: number;
+    weather_influence: number;
+  };
+}
+
+export interface MeersensResponse {
+  status: string;
+  data: MeersensAQIData;
 }
 
 export interface EnhancedAQIPrediction {
@@ -244,6 +264,49 @@ export const getEnhancedAQIPrediction = async (baseAQI: number, location: {lat: 
       },
       timestamp: new Date().toISOString()
     };
+  }
+};
+
+// Get enhanced AQI data from Meersens API
+export const getMeersensAQIData = async (
+  latitude: number,
+  longitude: number
+): Promise<MeersensAQIData | null> => {
+  try {
+    // First, attempt to use our local enhanced prediction as a fallback
+    const baseAQIResponse = await getCurrentAQI(latitude, longitude);
+    const baseAQI = baseAQIResponse.aqi;
+    const enhancedPrediction = await getEnhancedAQIPrediction(baseAQI, {lat: latitude, lng: longitude});
+    
+    // Simulate Meersens API response with our enhanced data
+    // In a real app, you would use the actual Meersens API endpoint
+    // const url = `${MEERSENS_URL}/air-quality?lat=${latitude}&lng=${longitude}&key=${MEERSENS_API_KEY}`;
+    // const response = await fetch(url);
+    // const meersensData = await response.json();
+    
+    // Simulated response using our enhanced prediction
+    const meersensData: MeersensAQIData = {
+      aqi: enhancedPrediction.enhanced_aqi,
+      dominentpol: baseAQIResponse.dominentpol || 'pm25',
+      iaqi: {
+        pm25: baseAQIResponse.iaqi?.pm25?.v || 0,
+        pm10: baseAQIResponse.iaqi?.pm10?.v || 0,
+        o3: baseAQIResponse.iaqi?.o3?.v || 0,
+        no2: baseAQIResponse.iaqi?.no2?.v || 0,
+        so2: baseAQIResponse.iaqi?.so2?.v || 0,
+        co: baseAQIResponse.iaqi?.co?.v || 0
+      },
+      additional_factors: {
+        traffic_impact: enhancedPrediction.factors.traffic,
+        industrial_proximity: 1.0, // Simulated value
+        weather_influence: enhancedPrediction.factors.weather
+      }
+    };
+    
+    return meersensData;
+  } catch (error) {
+    console.error('Error fetching Meersens AQI data:', error);
+    return null;
   }
 };
 
